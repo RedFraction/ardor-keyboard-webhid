@@ -28,6 +28,8 @@
         var g = 0xFF;
         var b = 0xFF;
 
+        var dev = null;
+
         function updateColor() {
             // Get selected color in hexadecimal format
             const hex = colorPicker.value;
@@ -42,6 +44,8 @@
 
             // Display RGB values
             rgbValues.textContent = `RGB: ${r}, ${g}, ${b}`;
+
+            sendHidPacket();
         }
 
         // Initial update
@@ -50,7 +54,7 @@
         // Add event listener for color changes
         colorPicker.addEventListener('input', updateColor);
 
-        var dev = null;
+
 
         document.addEventListener('DOMContentLoaded', function(){console.log("loaded")});
 
@@ -58,14 +62,14 @@
         document.getElementById("listBt").addEventListener("click", showDeviceList);
 
         async function showDeviceList() {
-            const devices = await navigator.hid.requestDevice({
-                filters: [] 
+            const device = await navigator.hid.requestDevice({
+                    filters: [
+                        { vendorId: 0xc45, productId: 0x8006 },
+                        //                 { usagePage: 0xFF60, usage: 0x61 }
+                    ]
             });
 
-            for (const device of devices) {
-                elist.innerHTML += `Device: ${device.productName}\n`;
-                elist.innerHTML += `  Vendor ID: 0x${device.vendorId.toString(16)}`;
-            }
+            dev = device[0];
         }
 
         async function sendHidPacket() {
@@ -93,59 +97,50 @@
 
 
             try {
-                
-                const [device] = await navigator.hid.requestDevice({
-                    filters: [
-                        { vendorId: 0xc45, productId: 0x8006 },
-                        //                 { usagePage: 0xFF60, usage: 0x61 }
-                    ]
-                });
 
-                if (!device) {
+                if (!dev) {
                     console.log('No device selected');
                     return;
                 }
 
-                dev = device;
+                await dev.open();
 
-                await device.open();
-
-                console.log('Device opened:', device.productName);
+                console.log('Device opened:', dev.productName);
 
                 async function sleep(msec) {
                     return new Promise(resolve => setTimeout(resolve, msec));
                 }
 
                 // TODO Добавить прерывания
-                device.sendFeatureReport(0, packet0);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet1);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet2);await sleep(100);
-                device.sendFeatureReport(0, packet3);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet4);await sleep(100);
-                device.sendFeatureReport(0, packet5);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet6);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet7);await sleep(100);
-                device.sendFeatureReport(0, packet8);await sleep(100);
-                device.sendFeatureReport(0, packet9);await sleep(100);
-                device.sendFeatureReport(0, packet10);await sleep(100);
-                device.sendFeatureReport(0, packet11);await sleep(100);
-                device.sendFeatureReport(0, packet12);await sleep(100);
-                device.sendFeatureReport(0, packet13);await sleep(100);
-                device.sendFeatureReport(0, packet14);await sleep(100);
-                device.sendFeatureReport(0, packet15);await sleep(100);
-                device.sendFeatureReport(0, packet16);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
-                device.sendFeatureReport(0, packet17);await sleep(100);
-                device.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet0);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet1);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet2);await sleep(100);
+                dev.sendFeatureReport(0, packet3);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet4);await sleep(100);
+                dev.sendFeatureReport(0, packet5);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet6);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet7);await sleep(100);
+                dev.sendFeatureReport(0, packet8);await sleep(100);
+                dev.sendFeatureReport(0, packet9);await sleep(100);
+                dev.sendFeatureReport(0, packet10);await sleep(100);
+                dev.sendFeatureReport(0, packet11);await sleep(100);
+                dev.sendFeatureReport(0, packet12);await sleep(100);
+                dev.sendFeatureReport(0, packet13);await sleep(100);
+                dev.sendFeatureReport(0, packet14);await sleep(100);
+                dev.sendFeatureReport(0, packet15);await sleep(100);
+                dev.sendFeatureReport(0, packet16);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
+                dev.sendFeatureReport(0, packet17);await sleep(100);
+                dev.receiveFeatureReport(0);await sleep(100);
 
                 console.log('Packet sent successfully');
 
-                device.close();
+                await dev.close();
             } catch (error) {
                 console.error('Error:', error);
             }
